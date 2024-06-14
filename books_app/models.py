@@ -16,11 +16,9 @@ class Book(models.Model):
         choices=CoverType.choices,
         default=CoverType.SOFT,
     )
-    inventory = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    inventory = models.PositiveIntegerField(validators=[MinValueValidator(0)])
     daily_fee = models.DecimalField(
-        max_digits=7,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal("0.00"))]
+        max_digits=7, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
     )
 
     class Meta:
