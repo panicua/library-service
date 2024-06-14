@@ -34,7 +34,7 @@ class Payment(models.Model):
 
     money_to_pay = models.DecimalField(max_digits=10,
                                        decimal_places=2,
-                                       validators=[MinValueValidator(Decimal('0.0'))])
+                                       validators=[MinValueValidator(Decimal('0.00'))])
 
     def __str__(self):
         return f"Payment: {self.id}; Pay: {self.money_to_pay};"
