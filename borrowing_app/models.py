@@ -5,7 +5,7 @@ from books_app.models import Book
 
 
 class Borrowing(models.Model):
-    borrow_date = models.DateField()
+    borrow_date = models.DateField(auto_now_add=True)
     expected_return_date = models.DateField()
     actual_return_date = models.DateField()
     books = models.ManyToManyField(Book, on_delete=models.CASCADE, related_name='borrowings')
