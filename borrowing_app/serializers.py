@@ -17,3 +17,12 @@ class BorrowingListSerializer(BorrowingSerializer):
     class Meta:
         model = Borrowing
         fields = ["id", "borrow_date", "expected_return_date", "actual_return_date", "books", "reader_email"]
+
+
+class BorrowingDetailSerializer(BorrowingSerializer):
+    books = BookSerializer(many=True, read_only=True)
+    reader_email = serializers.EmailField(source="user.email", read_only=True)
+
+    class Meta:
+        model = Borrowing
+        fields = ["id", "borrow_date", "expected_return_date", "actual_return_date", "books", "reader_email"]
