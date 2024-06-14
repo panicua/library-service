@@ -22,7 +22,7 @@ class PaymentViewSet(
         return self.queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return PaymentListSerializer
 
         return self.serializer_class
