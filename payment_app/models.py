@@ -25,12 +25,12 @@ class Payment(models.Model):
         default=Type.PAYMENT
     )
 
-    borrowing = models.ForeignKey(
+    borrowing = models.OneToOneField(
         Borrowing, on_delete=models.CASCADE, related_name="payments"
     )
 
     session_url = models.URLField(max_length=255)
-    session_id = models.IntegerField(max_length=63)
+    session_id = models.IntegerField()
 
     money_to_pay = models.DecimalField(max_digits=10,
                                        decimal_places=2,
