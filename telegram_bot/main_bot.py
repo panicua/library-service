@@ -49,9 +49,9 @@ class TelegramBot:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> int:
         await update.message.reply_text(
-            "Hi! I'm the <b>Library notification bot</b>.\n"
+            "Hi! I'm the *Library notification bot*.\n"
             "Please choose an option from a menu.",
-            parse_mode="HTML",
+            parse_mode="markdown",
             disable_web_page_preview=True,
             reply_markup=ReplyKeyboardMarkup(self.reply_keyboard),
         )
