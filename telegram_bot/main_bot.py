@@ -34,8 +34,11 @@ class TelegramBot:
             ["big placeholder_3"],
         ]
 
+        self.validate_api_key_not_empty()
+
+    def validate_api_key_not_empty(self):
         if not self.API_KEY:
-            print(
+            logger.error(
                 "API key not found. "
                 "Please set the valid TELEGRAM_API_KEY environment variable."
             )
@@ -46,7 +49,7 @@ class TelegramBot:
     ) -> int:
         await update.message.reply_text(
             "Hi! I'm the <b>Library notification bot</b>.\n"
-            "Please choose an option from a menu:",
+            "Please choose an option from a menu.",
             parse_mode="HTML",
             disable_web_page_preview=True,
             reply_markup=ReplyKeyboardMarkup(self.reply_keyboard),
