@@ -1,6 +1,7 @@
 import logging
 import sys
 
+import aiohttp
 from decouple import config
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
@@ -12,7 +13,7 @@ from telegram.ext import (
     ContextTypes,
 )
 
-print("Starting bot...")
+HOST_API_URL = config("HOST_API_URL", None)
 
 # logging
 logging.basicConfig(
@@ -29,7 +30,7 @@ class TelegramBot:
         self.reply_keyboard = [
             ["big placeholder_1"],
             ["big placeholder_2"],
-            ["small placeholder_1_1", "small placeholder_1_2"],
+            ["List of books", "small placeholder_1_2"],
             ["small placeholder_2_1", "small placeholder_2_2"],
             ["big placeholder_3"],
         ]
@@ -60,6 +61,25 @@ class TelegramBot:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> int:
         user_choice = update.message.text
+
+        if user_choice == "List of books":
+            async with aiohttp.ClientSession() as session:
+                async with session.get(HOST_API_URL + "api/books/") as resp:
+                    books = await resp.json()
+
+            response = f"~List of books:\n\n"
+
+            for book in books[-5:]:
+                response += (
+                    f"*Title*: {book['title']},\n*Author*: {book['author']}\n"
+                    f"*Amount left*: {book['inventory']}, "
+                    f"*Daily fee*: {book['daily_fee']}\n\n"
+                )
+            await update.message.reply_text(
+                text=response, parse_mode="markdown"
+            )
+            return self.CHOOSING_OPTION
+
         if user_choice in ["exit", "cancel"]:
             await update.message.reply_text(
                 "Bye!", reply_markup=ReplyKeyboardRemove()
@@ -83,7 +103,7 @@ class TelegramBot:
         logger.error("Exception occurred:", exc_info=context.error)
 
     def main(self) -> None:
-        print("Running a bot")
+        logger.info("Running telegram bot...")
         application = Application.builder().token(self.API_KEY).build()
 
         conv_handler = ConversationHandler(
