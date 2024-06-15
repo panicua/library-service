@@ -26,7 +26,7 @@ class Payment(models.Model):
     )
 
     borrowing = models.OneToOneField(
-        Borrowing, on_delete=models.CASCADE, related_name="payments"
+        Borrowing, on_delete=models.CASCADE, related_name="payment"
     )
 
     session_url = models.URLField(max_length=255)
