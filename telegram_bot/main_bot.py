@@ -1,8 +1,9 @@
 import logging
 import sys
+import requests
 
 import aiohttp
-from decouple import config
+from decouple import config, Csv
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application,
@@ -15,6 +16,11 @@ from telegram.ext import (
 
 HOST_API_URL = config("HOST_API_URL", None)
 
+TELEGRAM_API_KEY = config("TELEGRAM_API_KEY", None)
+TELEGRAM_CHAT_IDS = config("TELEGRAM_CHAT_IDS", cast=Csv())
+
+LOG_CHAT_ID_ON_START = config("LOG_CHAT_ID_ON_START", default=False, cast=bool)
+
 # logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -25,12 +31,13 @@ logger = logging.getLogger(__name__)
 
 class TelegramBot:
     def __init__(self):
-        self.API_KEY = config("TELEGRAM_API_KEY", None)
+        self.API_KEY = TELEGRAM_API_KEY
+        self.DEFAULT_BOT_URL = "https://api.telegram.org/bot" + self.API_KEY
         self.CHOOSING_OPTION = 0
         self.reply_keyboard = [
             ["big placeholder_1"],
             ["big placeholder_2"],
-            ["List of books", "small placeholder_1_2"],
+            ["List of books", "send test message"],
             ["small placeholder_2_1", "small placeholder_2_2"],
             ["big placeholder_3"],
         ]
@@ -45,9 +52,38 @@ class TelegramBot:
             )
             sys.exit(1)
 
+    def log_chat_id_on_start(self):
+        if not LOG_CHAT_ID_ON_START:
+            return
+
+        response = requests.get(f"{self.DEFAULT_BOT_URL}/getUpdates")
+
+        if response.status_code == 200:
+            data = response.json()
+            if "result" in data:
+                for result in data["result"]:
+                    if "message" in result:
+                        chat_id = result["message"]["chat"]["id"]
+                        username = result["message"]["from"]["username"]
+                        logger.info(f"User: {username}, Chat ID: {chat_id}")
+
+    def send_telegram_message(self, message: str) -> None:
+        url = f"{self.DEFAULT_BOT_URL}/sendMessage"
+        for CHAT_ID in TELEGRAM_CHAT_IDS:
+            payload = {
+                "chat_id": CHAT_ID,
+                "text": message,
+                "parse_mode": "markdown",
+            }
+            response = requests.post(url, json=payload)
+            if response.status_code != 200:
+                raise Exception(f"Error sending message: {response.text}")
+
     async def start(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> int:
+        self.log_chat_id_on_start()
+
         await update.message.reply_text(
             "Hi! I'm the *Library notification bot*.\n"
             "Please choose an option from a menu.",
@@ -78,6 +114,10 @@ class TelegramBot:
             await update.message.reply_text(
                 text=response, parse_mode="markdown"
             )
+            return self.CHOOSING_OPTION
+
+        if user_choice == "send test message":
+            self.send_telegram_message("Test message")
             return self.CHOOSING_OPTION
 
         if user_choice in ["exit", "cancel"]:
