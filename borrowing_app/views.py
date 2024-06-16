@@ -1,10 +1,13 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from borrowing_app.models import Borrowing
 from borrowing_app.serializers import (
     BorrowingSerializer,
     BorrowingListSerializer,
+    BorrowingReturnSerializer,
 )
 from .tasks import send_telegram_message
 
@@ -37,6 +40,8 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
             return BorrowingListSerializer
+        elif self.action == "return_book":
+            return BorrowingReturnSerializer
         return self.serializer_class
 
     def perform_create(self, serializer):
@@ -49,3 +54,19 @@ class BorrowingViewSet(viewsets.ModelViewSet):
             f"*With expected return on*: {instance.expected_return_date}."
         )
         send_telegram_message.delay(message)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated],
+        url_path="return",
+    )
+    def return_book(self, request, pk=None):
+        borrowing = self.get_object()
+        serializer = BorrowingReturnSerializer(
+            borrowing, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
