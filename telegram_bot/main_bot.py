@@ -17,7 +17,6 @@ from telegram.ext import (
 HOST_API_URL = config("HOST_API_URL", None)
 
 TELEGRAM_API_KEY = config("TELEGRAM_API_KEY", None)
-TELEGRAM_CHAT_IDS = config("TELEGRAM_CHAT_IDS", cast=Csv())
 
 LOG_CHAT_ID_ON_START = config("LOG_CHAT_ID_ON_START", default=False, cast=bool)
 
@@ -53,15 +52,6 @@ class TelegramBot:
                 "Closing the application..."
             )
             sys.exit(1)
-
-    def validate_chat_ids_not_empty(self) -> bool:
-        if not self.CHAT_IDS:
-            logger.error(
-                "Chat IDs not found. "
-                "Please set the valid TELEGRAM_CHAT_IDS environment variable."
-            )
-            return False
-        return True
 
     def log_chat_id_on_start(self) -> None:
         if not LOG_CHAT_ID_ON_START:
