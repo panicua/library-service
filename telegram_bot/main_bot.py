@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 class TelegramBot:
     def __init__(self):
         self.API_KEY = TELEGRAM_API_KEY
+        self.CHAT_IDS = TELEGRAM_CHAT_IDS
         self.DEFAULT_BOT_URL = "https://api.telegram.org/bot" + self.API_KEY
         self.CHOOSING_OPTION = 0
         self.reply_keyboard = [
@@ -44,15 +45,25 @@ class TelegramBot:
 
         self.validate_api_key_not_empty()
 
-    def validate_api_key_not_empty(self):
+    def validate_api_key_not_empty(self) -> None:
         if not self.API_KEY:
             logger.error(
                 "API key not found. "
                 "Please set the valid TELEGRAM_API_KEY environment variable."
+                "Closing the application..."
             )
             sys.exit(1)
 
-    def log_chat_id_on_start(self):
+    def validate_chat_ids_not_empty(self) -> bool:
+        if not self.CHAT_IDS:
+            logger.error(
+                "Chat IDs not found. "
+                "Please set the valid TELEGRAM_CHAT_IDS environment variable."
+            )
+            return False
+        return True
+
+    def log_chat_id_on_start(self) -> None:
         if not LOG_CHAT_ID_ON_START:
             return
 
@@ -68,14 +79,18 @@ class TelegramBot:
                         logger.info(f"User: {username}, Chat ID: {chat_id}")
 
     def send_telegram_message(self, message: str) -> None:
+        if not self.validate_chat_ids_not_empty():
+            return
+
         url = f"{self.DEFAULT_BOT_URL}/sendMessage"
-        for CHAT_ID in TELEGRAM_CHAT_IDS:
+        for CHAT_ID in self.CHAT_IDS:
             payload = {
                 "chat_id": CHAT_ID,
                 "text": message,
                 "parse_mode": "markdown",
             }
             response = requests.post(url, json=payload)
+
             if response.status_code != 200:
                 raise Exception(f"Error sending message: {response.text}")
 
