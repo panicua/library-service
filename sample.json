@@ -1,0 +1,41 @@
+[
+  {
+    "model": "books_app.book",
+    "pk": 1,
+    "fields": {
+      "title": "Kobzar",
+      "author": "Taras Shevchenko",
+      "cover": "HARD",
+      "inventory": 15,
+      "daily_fee": "0.08"
+    }
+  },
+  {
+    "model": "books_app.book",
+    "pk": 2,
+    "fields": {
+      "title": "Harry Potter and philosopher stone",
+      "author": "Joane K. Rowling",
+      "cover": "HARD",
+      "inventory": 10,
+      "daily_fee": "0.10"
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$720000$T8T0B1XXvxtfCALvtzsLB5$1KXRaL4uhGZrYD/6sLTzng+BIq/WYHc6RwE7yP1FRBw=",
+      "last_login": null,
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-06-16T20:05:03.129Z",
+      "email": "admin@admin.com",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]
