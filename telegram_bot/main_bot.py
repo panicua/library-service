@@ -1,8 +1,8 @@
 import logging
 import sys
-import requests
 
 import aiohttp
+import requests
 from decouple import config, Csv
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
