@@ -14,7 +14,9 @@ class BorrowingSerializer(serializers.ModelSerializer):
     @staticmethod
     def validate_book(value):
         if value.inventory <= 0:
-            raise serializers.ValidationError("You can't borrow a book now")
+            raise serializers.ValidationError(
+                "There are no books left in inventory"
+            )
         return value
 
     def create(self, validated_data):
