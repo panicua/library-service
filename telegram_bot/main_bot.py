@@ -78,25 +78,7 @@ class TelegramBot:
                         username = result["message"]["from"]["username"]
                         logger.info(f"User: {username}, Chat ID: {chat_id}")
 
-    def send_telegram_message(self, message: str) -> None:
-        if not self.validate_chat_ids_not_empty():
-            return
-
-        url = f"{self.DEFAULT_BOT_URL}/sendMessage"
-        for CHAT_ID in self.CHAT_IDS:
-            payload = {
-                "chat_id": CHAT_ID,
-                "text": message,
-                "parse_mode": "markdown",
-            }
-            response = requests.post(url, json=payload)
-
-            if response.status_code != 200:
-                raise Exception(f"Error sending message: {response.text}")
-
-    async def start(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ) -> int:
+    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         self.log_chat_id_on_start()
 
         await update.message.reply_text(
@@ -126,19 +108,11 @@ class TelegramBot:
                     f"*Amount left*: {book['inventory']}, "
                     f"*Daily fee*: {book['daily_fee']}\n\n"
                 )
-            await update.message.reply_text(
-                text=response, parse_mode="markdown"
-            )
-            return self.CHOOSING_OPTION
-
-        if user_choice == "send test message":
-            self.send_telegram_message("Test message")
+            await update.message.reply_text(text=response, parse_mode="markdown")
             return self.CHOOSING_OPTION
 
         if user_choice in ["exit", "cancel"]:
-            await update.message.reply_text(
-                "Bye!", reply_markup=ReplyKeyboardRemove()
-            )
+            await update.message.reply_text("Bye!", reply_markup=ReplyKeyboardRemove())
             return ConversationHandler.END
         else:
             await update.message.reply_text(
@@ -146,15 +120,11 @@ class TelegramBot:
             )
             return self.CHOOSING_OPTION
 
-    async def exit(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ) -> int:
+    async def exit(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("Conversation closed.")
         return ConversationHandler.END
 
-    async def error_handler(
-        self, update: Update, context: ContextTypes.DEFAULT_TYPE
-    ):
+    async def error_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error("Exception occurred:", exc_info=context.error)
 
     def main(self) -> None:
