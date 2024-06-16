@@ -31,7 +31,6 @@ logger = logging.getLogger(__name__)
 class TelegramBot:
     def __init__(self):
         self.API_KEY = TELEGRAM_API_KEY
-        self.CHAT_IDS = TELEGRAM_CHAT_IDS
         self.DEFAULT_BOT_URL = "https://api.telegram.org/bot" + self.API_KEY
         self.CHOOSING_OPTION = 0
         self.reply_keyboard = [
