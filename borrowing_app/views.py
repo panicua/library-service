@@ -1,10 +1,13 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from borrowing_app.models import Borrowing
 from borrowing_app.serializers import (
     BorrowingSerializer,
     BorrowingListSerializer,
+    BorrowingReturnSerializer,
 )
 
 
@@ -36,7 +39,31 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
             return BorrowingListSerializer
+        elif self.action == "return_book":
+            return BorrowingReturnSerializer
         return self.serializer_class
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(
+        detail=True,
+        methods=["get", "post"],
+        permission_classes=[IsAuthenticated],
+        url_path="return-book",
+    )
+    def return_book(self, request, pk=None):
+        if request.method == "GET":
+            borrowing = self.get_object()
+            serializer = BorrowingReturnSerializer(borrowing)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == "POST":
+            borrowing = self.get_object()
+            serializer = BorrowingReturnSerializer(
+                borrowing, data=request.data, partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
