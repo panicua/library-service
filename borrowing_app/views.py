@@ -48,22 +48,16 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=["get", "post"],
+        methods=["post"],
         permission_classes=[IsAuthenticated],
-        url_path="return-book",
+        url_path="return",
     )
     def return_book(self, request, pk=None):
-        if request.method == "GET":
-            borrowing = self.get_object()
-            serializer = BorrowingReturnSerializer(borrowing)
+        borrowing = self.get_object()
+        serializer = BorrowingReturnSerializer(
+            borrowing, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-
-        elif request.method == "POST":
-            borrowing = self.get_object()
-            serializer = BorrowingReturnSerializer(
-                borrowing, data=request.data, partial=True
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
