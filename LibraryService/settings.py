@@ -133,6 +133,12 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
+# Stripe Settings
+
+STRIPE_PUBLISHABLE_KEY = config("STRIPE_PUBLISHABLE_KEY")
+STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")
+STRIPE_API_VERSION = "2022-08-01"
+
 # Celery, Redis settings
 CACHES = {
     "default": {
