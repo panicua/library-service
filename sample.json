@@ -3,37 +3,76 @@
     "model": "books_app.book",
     "pk": 1,
     "fields": {
-      "title": "Kobzar",
-      "author": "Taras Shevchenko",
+      "title": "Harry Potter & philosopher stone",
+      "author": "J.K. Rowling",
       "cover": "HARD",
-      "inventory": 15,
-      "daily_fee": "0.08"
+      "inventory": 13,
+      "daily_fee": "1.50"
     }
   },
   {
     "model": "books_app.book",
     "pk": 2,
     "fields": {
-      "title": "Harry Potter and philosopher stone",
-      "author": "Joane K. Rowling",
+      "title": "Kobzar",
+      "author": "T. Shevchenko",
       "cover": "HARD",
-      "inventory": 10,
-      "daily_fee": "0.10"
+      "inventory": 15,
+      "daily_fee": "0.50"
+    }
+  },
+  {
+    "model": "borrowing_app.borrowing",
+    "pk": 1,
+    "fields": {
+      "borrow_date": "2024-06-17",
+      "expected_return_date": "2024-06-18",
+      "actual_return_date": null,
+      "book": 1,
+      "user": 2
+    }
+  },
+  {
+    "model": "borrowing_app.borrowing",
+    "pk": 2,
+    "fields": {
+      "borrow_date": "2024-06-17",
+      "expected_return_date": "2024-06-10",
+      "actual_return_date": null,
+      "book": 1,
+      "user": 2
     }
   },
   {
     "model": "user.user",
     "pk": 1,
     "fields": {
-      "password": "pbkdf2_sha256$720000$T8T0B1XXvxtfCALvtzsLB5$1KXRaL4uhGZrYD/6sLTzng+BIq/WYHc6RwE7yP1FRBw=",
+      "password": "pbkdf2_sha256$720000$vHYMrlLp1Lg3ZZ9E14RvR5$99GedM4ymuMqsvbRHILk+jzQtDurlQrLEJ32psVBoMY=",
       "last_login": null,
       "is_superuser": true,
       "first_name": "",
       "last_name": "",
       "is_staff": true,
       "is_active": true,
-      "date_joined": "2024-06-16T20:05:03.129Z",
+      "date_joined": "2024-06-17T10:31:39.480Z",
       "email": "admin@admin.com",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$720000$U34AfNMrUHBib72NrGy6eS$DrOjDKTlxI+YmuGaQ0NVRZZ9otUx5Ovoj7Zv26XbaNk=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-06-17T10:32:17.777Z",
+      "email": "user@user.com",
       "groups": [],
       "user_permissions": []
     }
