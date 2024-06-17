@@ -78,12 +78,13 @@ class BorrowingViewSet(
             borrowing, data=request.data, partial=True
         )
 
+        payment, created = Payment.objects.get_or_create(
+            borrowing_id=borrowing.id,
+            defaults={"money_to_pay": borrowing.payable},
+        )
+
         if serializer.is_valid():
             serializer.save()
-            payment, created = Payment.objects.get_or_create(
-                borrowing_id=borrowing.id,
-                defaults={"money_to_pay": borrowing.payable},
-            )
 
             if not created and payment.status == Payment.Status.PAID:
                 return Response(
