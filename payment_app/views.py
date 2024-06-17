@@ -10,6 +10,7 @@ from stripe.checkout import Session
 from LibraryService.settings import STRIPE_SECRET_KEY
 from payment_app.models import Payment
 from payment_app.serializers import PaymentSerializer, PaymentListSerializer
+from borrowing_app.tasks import send_telegram_message
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -46,6 +47,15 @@ class PaymentViewSet(
         if session.payment_status == "paid":
             payment.status = Payment.Status.PAID
             payment.save()
+
+            send_telegram_message.delay(
+                f"*Successful payment!*\n,"
+                f"*Book title*: {payment.borrowing.book.title},\n"
+                f"*User*: {payment.borrowing.user.email},\n"
+                f"*Payment id*: {payment.id},\n"
+                f"*Money paid*: {payment.money_to_pay},\n"
+                f"*Payment status*: {payment.status}"
+            )
             return Response({"detail": "Payment was successful!"})
 
         return Response(
