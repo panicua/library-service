@@ -26,6 +26,7 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "drf_spectacular",
+    "django_celery_beat",
 
     "user",
     "books_app",

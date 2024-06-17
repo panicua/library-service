@@ -30,13 +30,30 @@ services:
     networks:
       - my_network
 
-  celery:
-    container_name: celery
+  celery_worker:
+    container_name: celery-worker
     build:
       context: .
     command: celery -A LibraryService worker -l INFO
     volumes:
       - ./:/library_app
+    env_file:
+      - .env
+    depends_on:
+      - library_app
+    networks:
+      - my_network
+
+  celery_beat:
+    container_name: celery-beat
+    build:
+      context: .
+    command: > 
+      celery -A LibraryService beat -l INFO --scheduler 
+      django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./:/library_app
+      - ./celerybeat-schedule:/app/celerybeat-schedule
     env_file:
       - .env
     depends_on:

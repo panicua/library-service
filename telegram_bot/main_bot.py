@@ -2,8 +2,7 @@ import logging
 import sys
 
 import aiohttp
-import requests
-from decouple import config, Csv
+from decouple import config
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application,
@@ -36,7 +35,7 @@ class TelegramBot:
         self.reply_keyboard = [
             ["big placeholder_1"],
             ["big placeholder_2"],
-            ["List of books", "send test message"],
+            ["List of books", "Get my chat_id"],
             ["small placeholder_2_1", "small placeholder_2_2"],
             ["big placeholder_3"],
         ]
@@ -52,24 +51,9 @@ class TelegramBot:
             )
             sys.exit(1)
 
-    def log_chat_id_on_start(self) -> None:
-        if not LOG_CHAT_ID_ON_START:
-            return
-
-        response = requests.get(f"{self.DEFAULT_BOT_URL}/getUpdates")
-
-        if response.status_code == 200:
-            data = response.json()
-            if "result" in data:
-                for result in data["result"]:
-                    if "message" in result:
-                        chat_id = result["message"]["chat"]["id"]
-                        username = result["message"]["from"]["username"]
-                        logger.info(f"User: {username}, Chat ID: {chat_id}")
-
-    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        self.log_chat_id_on_start()
-
+    async def start(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> int:
         await update.message.reply_text(
             "Hi! I'm the *Library notification bot*.\n"
             "Please choose an option from a menu.",
@@ -97,11 +81,21 @@ class TelegramBot:
                     f"*Amount left*: {book['inventory']}, "
                     f"*Daily fee*: {book['daily_fee']}\n\n"
                 )
-            await update.message.reply_text(text=response, parse_mode="markdown")
+            await update.message.reply_text(
+                text=response, parse_mode="markdown"
+            )
+            return self.CHOOSING_OPTION
+
+        if user_choice == "Get my chat_id":
+            await update.message.reply_text(
+                f"Your chat ID: {update.message.chat_id}"
+            )
             return self.CHOOSING_OPTION
 
         if user_choice in ["exit", "cancel"]:
-            await update.message.reply_text("Bye!", reply_markup=ReplyKeyboardRemove())
+            await update.message.reply_text(
+                "Bye!", reply_markup=ReplyKeyboardRemove()
+            )
             return ConversationHandler.END
         else:
             await update.message.reply_text(
@@ -109,11 +103,15 @@ class TelegramBot:
             )
             return self.CHOOSING_OPTION
 
-    async def exit(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    async def exit(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> int:
         await update.message.reply_text("Conversation closed.")
         return ConversationHandler.END
 
-    async def error_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def error_handler(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
         logger.error("Exception occurred:", exc_info=context.error)
 
     def main(self) -> None:
