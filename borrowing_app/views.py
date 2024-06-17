@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -77,10 +77,16 @@ class BorrowingViewSet(
         serializer = BorrowingReturnSerializer(
             borrowing, data=request.data, partial=True
         )
+        if borrowing.expiated:
+            payment_type = Payment.Type.FINE
+            money_to_pay = borrowing.fine_payable
+        else:
+            payment_type = Payment.Type.PAYMENT
+            money_to_pay = borrowing.payable
 
         payment, created = Payment.objects.get_or_create(
             borrowing_id=borrowing.id,
-            defaults={"money_to_pay": borrowing.payable},
+            defaults={"money_to_pay": money_to_pay, "type": payment_type},
         )
 
         if serializer.is_valid():

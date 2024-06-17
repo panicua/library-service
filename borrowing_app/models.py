@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from LibraryService.settings import FINE_COEFFICIENT
 from books_app.models import Book
 
 User = get_user_model()
@@ -32,3 +33,24 @@ class Borrowing(models.Model):
         days_borrowed = (date.today() - self.borrow_date).days
         daily_fee = Decimal(self.book.daily_fee)
         return Decimal(days_borrowed) * daily_fee
+
+    @property
+    def fine_payable(self):
+        return Decimal((
+            (self.overdue_days + self.borrow_days)
+            * Decimal(self.book.daily_fee)
+        ) * FINE_COEFFICIENT)
+
+    @property
+    def expiated(self) -> bool:
+        if not self.actual_return_date:
+            self.actual_return_date = date.today()
+        return self.expected_return_date < self.actual_return_date
+
+    @property
+    def overdue_days(self) -> int:
+        return (self.actual_return_date - self.expected_return_date).days - 1
+
+    @property
+    def borrow_days(self) -> int:
+        return (self.expected_return_date - self.borrow_date).days
