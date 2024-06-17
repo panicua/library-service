@@ -11,7 +11,6 @@ from LibraryService.settings import STRIPE_SECRET_KEY
 from borrowing_app.tasks import send_telegram_message
 from payment_app.models import Payment
 from payment_app.serializers import PaymentSerializer, PaymentListSerializer
-from borrowing_app.tasks import send_telegram_message
 
 stripe.api_key = STRIPE_SECRET_KEY
 
