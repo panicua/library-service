@@ -23,11 +23,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
     "drf_spectacular",
     "django_celery_beat",
-
     "user",
     "books_app",
     "payment_app",
@@ -160,3 +158,6 @@ CELERY_LOG_LEVEL = "info"
 CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# Business logic settings
+FINE_COEFFICIENT = 2
