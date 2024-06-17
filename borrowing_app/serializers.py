@@ -23,6 +23,22 @@ class BorrowingSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate(self, data):
+        user = self.context['request'].user
+        pending_payments = Payment.objects.filter(borrowing__user=user, status=Payment.Status.PENDING).exists()
+
+        if pending_payments:
+            raise serializers.ValidationError(
+                "You have pending payments. Please settle them before borrowing new books."
+            )
+
+        if data['expected_return_date'] < date.today():
+            raise serializers.ValidationError(
+                "The expected return date cannot be in the past."
+            )
+
+        return data
+
     def create(self, validated_data):
         with transaction.atomic():
             book = validated_data["book"]
