@@ -14,9 +14,7 @@ from telegram.ext import (
 )
 
 HOST_API_URL = config("HOST_API_URL", None)
-
 TELEGRAM_API_KEY = config("TELEGRAM_API_KEY", None)
-
 LOG_CHAT_ID_ON_START = config("LOG_CHAT_ID_ON_START", default=False, cast=bool)
 
 # logging
@@ -71,7 +69,7 @@ class TelegramBot:
 
             response = f"~List of books:\n\n"
 
-            for book in books[-5:]:
+            for book in books[-50:]:
                 response += (
                     f"*Title*: {book['title']},\n*Author*: {book['author']}\n"
                     f"*Amount left*: {book['inventory']}, "

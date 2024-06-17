@@ -17,30 +17,8 @@
       "title": "Kobzar",
       "author": "T. Shevchenko",
       "cover": "HARD",
-      "inventory": 15,
+      "inventory": 15000,
       "daily_fee": "0.50"
-    }
-  },
-  {
-    "model": "borrowing_app.borrowing",
-    "pk": 1,
-    "fields": {
-      "borrow_date": "2024-06-17",
-      "expected_return_date": "2024-06-18",
-      "actual_return_date": null,
-      "book": 1,
-      "user": 2
-    }
-  },
-  {
-    "model": "borrowing_app.borrowing",
-    "pk": 2,
-    "fields": {
-      "borrow_date": "2024-06-17",
-      "expected_return_date": "2024-06-10",
-      "actual_return_date": null,
-      "book": 1,
-      "user": 2
     }
   },
   {
