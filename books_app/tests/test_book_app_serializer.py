@@ -6,6 +6,7 @@ from books_app.serializers import BookSerializer, BookListSerializer
 
 class BookSerializerTest(TestCase):
     def setUp(self):
+        """Set up a book instance for testing serializers."""
         self.book_attributes = {
             "title": "Test Book",
             "author": "Test Author",
@@ -16,6 +17,7 @@ class BookSerializerTest(TestCase):
         self.book = Book.objects.create(**self.book_attributes)
 
     def test_book_serializer(self):
+        """Test the BookSerializer for the correct output data."""
         serializer = BookSerializer(self.book)
         data = serializer.data
         self.assertEqual(set(data.keys()), set(["id", "title", "author", "cover", "inventory", "daily_fee"]))
@@ -26,6 +28,7 @@ class BookSerializerTest(TestCase):
         self.assertEqual(data["daily_fee"], str(self.book_attributes["daily_fee"]))
 
     def test_book_list_serializer(self):
+        """Test the BookListSerializer for the correct output data."""
         serializer = BookListSerializer(self.book)
         data = serializer.data
         self.assertEqual(set(data.keys()), set(["id", "title", "author", "inventory", "daily_fee"]))
