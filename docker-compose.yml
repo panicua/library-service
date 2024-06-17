@@ -41,6 +41,7 @@ services:
       - .env
     depends_on:
       - library_app
+      - redis
     networks:
       - my_network
 
@@ -49,8 +50,9 @@ services:
     build:
       context: .
     command: > 
+      sh -c "python manage.py migrate django_celery_beat &&
       celery -A LibraryService beat -l INFO --scheduler 
-      django_celery_beat.schedulers:DatabaseScheduler
+      django_celery_beat.schedulers:DatabaseScheduler"
     volumes:
       - ./:/library_app
       - ./celerybeat-schedule:/app/celerybeat-schedule
@@ -58,6 +60,7 @@ services:
       - .env
     depends_on:
       - library_app
+      - redis
     networks:
       - my_network
 
