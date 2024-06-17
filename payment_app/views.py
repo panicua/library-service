@@ -15,7 +15,6 @@ stripe.api_key = STRIPE_SECRET_KEY
 
 
 class PaymentViewSet(
-    mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
