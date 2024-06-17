@@ -1,7 +1,11 @@
 from django.shortcuts import redirect
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -18,10 +22,7 @@ from .tasks import send_telegram_message
 
 
 class BorrowingViewSet(
-    CreateModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    GenericViewSet
+    CreateModelMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet
 ):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
@@ -79,10 +80,20 @@ class BorrowingViewSet(
 
         if serializer.is_valid():
             serializer.save()
-            payment = Payment.objects.create(
-                borrowing_id=borrowing.id, money_to_pay=borrowing.payable
+            payment, created = Payment.objects.get_or_create(
+                borrowing_id=borrowing.id,
+                defaults={"money_to_pay": borrowing.payable},
             )
-            checkout_session = PaymentViewSet.create_stripe_session(payment, request)
+
+            if not created and payment.status == Payment.Status.PAID:
+                return Response(
+                    {"detail": "Payment already processed"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            checkout_session = PaymentViewSet.create_stripe_session(
+                payment, request
+            )
 
             if isinstance(checkout_session, Response):
                 return checkout_session

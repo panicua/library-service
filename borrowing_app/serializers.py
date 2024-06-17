@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from books_app.serializers import BookSerializer
 from borrowing_app.models import Borrowing
+from payment_app.models import Payment
 from payment_app.serializers import PaymentSerializer
 from user.serializers import UserSerializer
 
@@ -52,7 +53,12 @@ class BorrowingListSerializer(BorrowingSerializer):
 class BorrowingReturnSerializer(serializers.ModelSerializer):
     class Meta:
         model = Borrowing
-        fields = ("id", "actual_return_date", "expected_return_date", "borrow_date")
+        fields = (
+            "id",
+            "actual_return_date",
+            "expected_return_date",
+            "borrow_date",
+        )
         read_only_fields = (
             "id",
             "actual_return_date",
@@ -62,7 +68,7 @@ class BorrowingReturnSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         borrowing = self.instance
-        if borrowing.actual_return_date is not None:
+        if borrowing.payment.status == Payment.Status.PAID:
             raise serializers.ValidationError(
                 "This borrowing has already been returned."
             )

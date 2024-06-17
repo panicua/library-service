@@ -36,6 +36,32 @@ class PaymentViewSet(
 
         return self.serializer_class
 
+    @action(
+        detail=True, methods=["get"], url_path="success", url_name="success"
+    )
+    def success_payment(self, request, pk=None):
+        payment = self.get_object()
+        session = stripe.checkout.Session.retrieve(payment.session_id)
+
+        if session.payment_status == "paid":
+            payment.status = Payment.Status.PAID
+            payment.save()
+            return Response({"detail": "Payment was successful!"})
+
+        return Response(
+            {"detail": "Payment not completed yet."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(detail=True, methods=["get"], url_path="cancel", url_name="cancel")
+    def cancel_payment(self, request, pk=None):
+        payment = self.get_object()
+        return Response(
+            {
+                "detail": f"Payment can be completed within 24 hours using this url {payment.session_url}"
+            }
+        )
+
     @staticmethod
     def create_stripe_session(
         payment: Payment, request: HttpRequest
@@ -64,11 +90,14 @@ class PaymentViewSet(
                 mode="payment",
                 success_url=request.build_absolute_uri(
                     reverse(
-                        "payment_app:payment-detail", kwargs={"pk": payment.pk}
+                        "payment_app:payment-success",
+                        kwargs={"pk": payment.pk},
                     )
                 ),
                 cancel_url=request.build_absolute_uri(
-                    reverse("borrowing_app:borrowing-list")
+                    reverse(
+                        "payment_app:payment-cancel", kwargs={"pk": payment.pk}
+                    )
                 ),
             )
 
