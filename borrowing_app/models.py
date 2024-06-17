@@ -1,3 +1,6 @@
+from datetime import date
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -23,3 +26,9 @@ class Borrowing(models.Model):
 
     def __str__(self):
         return f"Book taken {self.borrow_date} to borrow {self.expected_return_date}"
+
+    @property
+    def payable(self):
+        days_borrowed = (date.today() - self.borrow_date).days
+        daily_fee = Decimal(self.book.daily_fee)
+        return Decimal(days_borrowed) * daily_fee

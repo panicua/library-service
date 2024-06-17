@@ -1,9 +1,11 @@
 import stripe
+from django.http import HttpRequest
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from stripe.checkout import Session
 
 from LibraryService.settings import STRIPE_SECRET_KEY
 from payment_app.models import Payment
@@ -34,9 +36,10 @@ class PaymentViewSet(
 
         return self.serializer_class
 
-    @action(detail=True, methods=["post"])
-    def create_stripe_session(self, request, pk=None):
-        payment = self.get_object()
+    @staticmethod
+    def create_stripe_session(
+        payment: Payment, request: HttpRequest
+    ) -> Session | Response:
         if payment.status != Payment.Status.PENDING:
             return Response(
                 {"detail": "Payment already processed"},
@@ -72,10 +75,11 @@ class PaymentViewSet(
             payment.session_id = session.id
             payment.session_url = session.url
             payment.save()
-            return Response(
-                {"session_url": session.url}, status=status.HTTP_200_OK
-            )
+
+            return session
+
         except Exception as e:
+
             return Response(
                 {"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST
             )

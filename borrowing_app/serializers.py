@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from books_app.serializers import BookSerializer
 from borrowing_app.models import Borrowing
+from payment_app.serializers import PaymentSerializer
 from user.serializers import UserSerializer
 
 
@@ -33,6 +34,7 @@ class BorrowingSerializer(serializers.ModelSerializer):
 class BorrowingListSerializer(BorrowingSerializer):
     user = UserSerializer(read_only=True)
     book = BookSerializer(read_only=True)
+    payment = PaymentSerializer(read_only=True)
 
     class Meta:
         model = Borrowing
@@ -43,6 +45,7 @@ class BorrowingListSerializer(BorrowingSerializer):
             "actual_return_date",
             "book",
             "user",
+            "payment",
         )
 
 
