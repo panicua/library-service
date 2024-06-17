@@ -49,7 +49,7 @@ class PaymentViewSet(
             payment.save()
 
             send_telegram_message.delay(
-                f"*Successful payment!*\n,"
+                f"*Successful payment!*\n"
                 f"*Book title*: {payment.borrowing.book.title},\n"
                 f"*User*: {payment.borrowing.user.email},\n"
                 f"*Payment id*: {payment.id},\n"
