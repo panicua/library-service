@@ -1,7 +1,10 @@
+from django.shortcuts import redirect
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from borrowing_app.models import Borrowing
 from borrowing_app.serializers import (
@@ -9,10 +12,17 @@ from borrowing_app.serializers import (
     BorrowingListSerializer,
     BorrowingReturnSerializer,
 )
+from payment_app.models import Payment
+from payment_app.views import PaymentViewSet
 from .tasks import send_telegram_message
 
 
-class BorrowingViewSet(viewsets.ModelViewSet):
+class BorrowingViewSet(
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    GenericViewSet
+):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
     permission_classes = (IsAuthenticated,)
@@ -66,7 +76,19 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         serializer = BorrowingReturnSerializer(
             borrowing, data=request.data, partial=True
         )
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            payment = Payment.objects.create(
+                borrowing_id=borrowing.id, money_to_pay=borrowing.payable
+            )
+            checkout_session = PaymentViewSet.create_stripe_session(payment, request)
+
+            if isinstance(checkout_session, Response):
+                return checkout_session
+
+            return redirect(
+                checkout_session.url, status=status.HTTP_307_TEMPORARY_REDIRECT
+            )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
