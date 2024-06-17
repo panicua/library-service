@@ -33,11 +33,7 @@ class TelegramBot:
         self.DEFAULT_BOT_URL = "https://api.telegram.org/bot" + self.API_KEY
         self.CHOOSING_OPTION = 0
         self.reply_keyboard = [
-            ["big placeholder_1"],
-            ["big placeholder_2"],
             ["List of books", "Get my chat_id"],
-            ["small placeholder_2_1", "small placeholder_2_2"],
-            ["big placeholder_3"],
         ]
 
         self.validate_api_key_not_empty()
