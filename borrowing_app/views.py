@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import (
     CreateModelMixin,

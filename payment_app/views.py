@@ -8,9 +8,9 @@ from rest_framework.reverse import reverse
 from stripe.checkout import Session
 
 from LibraryService.settings import STRIPE_SECRET_KEY
+from borrowing_app.tasks import send_telegram_message
 from payment_app.models import Payment
 from payment_app.serializers import PaymentSerializer, PaymentListSerializer
-from borrowing_app.tasks import send_telegram_message
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -68,7 +68,8 @@ class PaymentViewSet(
         payment = self.get_object()
         return Response(
             {
-                "detail": f"Payment can be completed within 24 hours using this url {payment.session_url}"
+                "detail": f"Payment can be completed within 24 hours "
+                          f"using this url {payment.session_url}"
             }
         )
 
@@ -118,7 +119,6 @@ class PaymentViewSet(
             return session
 
         except Exception as e:
-
             return Response(
                 {"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST
             )
