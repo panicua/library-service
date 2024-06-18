@@ -30,14 +30,14 @@ class Borrowing(models.Model):
 
     @property
     def payable(self):
-        days_borrowed = (date.today() - self.borrow_date).days
+        days_borrowed = (date.today() - self.borrow_date).days + 1
         daily_fee = Decimal(self.book.daily_fee)
         return Decimal(days_borrowed) * daily_fee
 
     @property
     def fine_payable(self):
         return Decimal((
-            (self.overdue_days + self.borrow_days)
+            (self.overdue_days + self.borrow_days) + 1
             * Decimal(self.book.daily_fee)
         ) * FINE_COEFFICIENT)
 
@@ -49,7 +49,7 @@ class Borrowing(models.Model):
 
     @property
     def overdue_days(self) -> int:
-        return (self.actual_return_date - self.expected_return_date).days - 1
+        return (self.actual_return_date - self.expected_return_date).days
 
     @property
     def borrow_days(self) -> int:
