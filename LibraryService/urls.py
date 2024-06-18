@@ -7,7 +7,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/users/", include("user.urls", namespace="users")),
     path("api/books/", include("books_app.urls", namespace="books_app")),
-    path("api/payment/", include("payment_app.urls", namespace="payment")),
+    path("api/payments/", include("payment_app.urls", namespace="payment")),
     path(
         "api/borrowings/",
         include("borrowing_app.urls", namespace="borrowing_app"),
