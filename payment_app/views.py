@@ -1,5 +1,12 @@
 import stripe
 from django.http import HttpRequest
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiExample,
+    extend_schema_view,
+    OpenApiResponse,
+)
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -15,6 +22,84 @@ from payment_app.serializers import PaymentSerializer, PaymentListSerializer
 stripe.api_key = STRIPE_SECRET_KEY
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Retrieve a list of payments",
+        description="Retrieve a list of all payments. Accessible by authenticated users.",
+        responses={200: PaymentListSerializer(many=True)},
+        examples=[
+            OpenApiExample(
+                "Payment list example",
+                value=[
+                    {
+                        "id": 1,
+                        "status": "PENDING",
+                        "type": "PAYMENT",
+                        "session_url": "https://example.com/session_url",
+                        "session_id": "sess_123",
+                        "money_to_pay": "4.00",
+                        "borrowing": {
+                            "id": 1,
+                            "borrow_date": "2024-06-18",
+                            "expected_return_date": "2024-06-25",
+                            "actual_return_date": "2024-06-24",
+                            "book": {
+                                "id": 1,
+                                "title": "Kobzar",
+                                "author": "Taras Shevchenko",
+                                "cover": "HARD",
+                                "inventory": 120,
+                                "daily_fee": "4.00",
+                            },
+                            "user": {
+                                "id": 1,
+                                "email": "user@example.com",
+                                "is_staff": True,
+                            },
+                        },
+                    }
+                ],
+            )
+        ],
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a single payment",
+        description="Retrieve the details of a specific payment by its ID. Accessible by authenticated user.",
+        responses={200: PaymentSerializer},
+        examples=[
+            OpenApiExample(
+                "Payment detail example",
+                value={
+                    "id": 2,
+                    "status": "PENDING",
+                    "type": "PAYMENT",
+                    "session_url": "https://example.com/session_url",
+                    "session_id": "sess_123",
+                    "money_to_pay": "4.00",
+                    "borrowing": {
+                        "id": 2,
+                        "borrow_date": "2024-06-18",
+                        "expected_return_date": "2024-06-25",
+                        "actual_return_date": "2024-06-24",
+                        "book": {
+                            "id": 1,
+                            "title": "Kobzar",
+                            "author": "Taras Shevchenko",
+                            "cover": "HARD",
+                            "inventory": 120,
+                            "daily_fee": "4.00",
+                        },
+                        "user": {
+                            "id": 1,
+                            "email": "user@example.com",
+                            "is_staff": True,
+                        },
+                    },
+                },
+            )
+        ],
+    ),
+)
 class PaymentViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -36,6 +121,30 @@ class PaymentViewSet(
 
         return self.serializer_class
 
+    @extend_schema(
+        summary="Mark payment as successful",
+        description="Check the payment status and mark it as paid if successful.",
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        "Success response",
+                        value={"detail": "Payment was successful!"},
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        "Failure response",
+                        value={"detail": "Payment not completed yet."},
+                    )
+                ]
+            ),
+        },
+    )
     @action(
         detail=True, methods=["get"], url_path="success", url_name="success"
     )
@@ -62,6 +171,26 @@ class PaymentViewSet(
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    @extend_schema(
+        summary="Get payment cancel info",
+        description="Get the URL to complete the payment within 24 hours.",
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        "Cancel response",
+                        value={
+                            "detail": (
+                                    "Payment can be completed within 24 hours "
+                                    "using this url https://example.com/session_url"
+                            )
+                        }
+                    )
+                ]
+            ),
+        },
+    )
     @action(detail=True, methods=["get"], url_path="cancel", url_name="cancel")
     def cancel_payment(self, request, pk=None):
         payment = self.get_object()
@@ -74,7 +203,7 @@ class PaymentViewSet(
 
     @staticmethod
     def create_stripe_session(
-        payment: Payment, request: HttpRequest
+            payment: Payment, request: HttpRequest
     ) -> Session | Response:
         if payment.status != Payment.Status.PENDING:
             return Response(
