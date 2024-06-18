@@ -1,4 +1,11 @@
 from django.shortcuts import redirect
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import (
+    extend_schema_view,
+    OpenApiParameter,
+    extend_schema,
+    OpenApiExample,
+)
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import (
@@ -21,6 +28,76 @@ from payment_app.views import PaymentViewSet
 from .tasks import send_telegram_message
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Retrieve a list of borrowings",
+        description="Retrieve a list of all books. Accessible by authenticated user.",
+        parameters=[
+            OpenApiParameter(
+                name="is_active",
+                description=(
+                    "Filter borrowing list by actual return date"
+                    "(ex. ?is_active=true)"
+                ),
+                required=False,
+                type=OpenApiTypes.BOOL,
+            ),
+            OpenApiParameter(
+                name="user_id",
+                description=(
+                    "Filter borrowing list by user id, only for admins"
+                    "(ex. ?user_id=5)"
+                ),
+                required=False,
+                type=OpenApiTypes.INT,
+            ),
+        ],
+        responses={200: BorrowingListSerializer(many=True)},
+        examples=[
+            OpenApiExample(
+                "Borrowing list example",
+                value={
+                    "id": 1,
+                    "borrow_date": "2024-06-18",
+                    "expected_return_date": "2024-06-18",
+                    "actual_return_date": "2024-06-18",
+                    "book": {
+                        "id": 1,
+                        "title": "Kobzar",
+                        "author": "Taras Shevchenko",
+                        "cover": "HARD",
+                        "inventory": 120,
+                        "daily_fee": "4",
+                    },
+                    "user": {
+                        "id": 1,
+                        "email": "user@example.com",
+                        "is_staff": True,
+                    },
+                    "payment": {
+                        "id": 1,
+                        "status": "PENDING",
+                        "type": "PAYMENT",
+                        "session_url": "string",
+                        "session_id": "string",
+                        "money_to_pay": "4",
+                        "borrowing": 1,
+                    },
+                },
+            )
+        ],
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a single borrowing",
+        description="Retrieve the details of a specific borrowing by its ID. Accessible by authenticated user.",
+        responses={200: BorrowingListSerializer}
+    ),
+    create=extend_schema(
+        summary="Create a new borrowing",
+        description="Create a new book. Accessible by authenticated user.",
+        responses={201: BorrowingSerializer}
+    ),
+)
 class BorrowingViewSet(
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet
 ):
@@ -66,6 +143,31 @@ class BorrowingViewSet(
         )
         send_telegram_message.delay(message)
 
+    @extend_schema(
+        summary="Return a borrowed book",
+        description="Mark a book as returned and process the payment for the borrowing.",
+        request=BorrowingReturnSerializer,
+        responses={200: BorrowingReturnSerializer},
+        examples=[
+            OpenApiExample("Request body example", value={}),
+            OpenApiExample(
+                "Return book example",
+                value={
+                    "id": 1,
+                    "actual_return_date": "2024-06-18",
+                    "payment": {
+                        "id": 1,
+                        "status": "PAID",
+                        "type": "PAYMENT",
+                        "session_url": "string",
+                        "session_id": "string",
+                        "money_to_pay": "4",
+                        "borrowing": 1,
+                    },
+                },
+            ),
+        ],
+    )
     @action(
         detail=True,
         methods=["post"],
