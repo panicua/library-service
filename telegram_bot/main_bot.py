@@ -31,7 +31,7 @@ class TelegramBot:
         self.DEFAULT_BOT_URL = "https://api.telegram.org/bot" + self.API_KEY
         self.CHOOSING_OPTION = 0
         self.reply_keyboard = [
-            ["List of books", "Get my chat_id"],
+            ["Get my chat_id"],
         ]
 
         self.validate_api_key_not_empty()
@@ -61,24 +61,6 @@ class TelegramBot:
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> int:
         user_choice = update.message.text
-
-        if user_choice == "List of books":
-            async with aiohttp.ClientSession() as session:
-                async with session.get(HOST_API_URL + "api/books/") as resp:
-                    books = await resp.json()
-
-            response = f"~List of books:\n\n"
-
-            for book in books[-50:]:
-                response += (
-                    f"*Title*: {book['title']},\n*Author*: {book['author']}\n"
-                    f"*Amount left*: {book['inventory']}, "
-                    f"*Daily fee*: {book['daily_fee']}\n\n"
-                )
-            await update.message.reply_text(
-                text=response, parse_mode="markdown"
-            )
-            return self.CHOOSING_OPTION
 
         if user_choice == "Get my chat_id":
             await update.message.reply_text(
