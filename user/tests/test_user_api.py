@@ -39,7 +39,7 @@ class UnauthorizedUserApiTest(TestCase):
         self.client = APIClient()
 
     def test_user_manage_no_access(self):
-        res = self.client.get(path=reverse("user:manage"))
+        res = self.client.get(path=reverse("users:manage"))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -56,20 +56,20 @@ class UserAPITest(TestCase):
         self.client.force_authenticate(user=self.superuser)
 
     def test_create_user_via_api(self):
-        url = reverse("user:create")
+        url = reverse("users:create")
         data = {"email": "test@api.com", "password": "password", "first_name": "Test", "last_name": "User"}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 201)
         self.assertEqual(get_user_model().objects.count(), 3)
 
     def test_retrieve_user_via_api(self):
-        url = reverse("user:manage")
+        url = reverse("users:manage")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["email"], self.superuser.email)
 
     def test_token_obtain(self):
-        url = reverse("user:token_obtain_pair")
+        url = reverse("users:token_obtain_pair")
         data = {"email": self.superuser.email, "password": "password"}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -78,7 +78,7 @@ class UserAPITest(TestCase):
 
     def test_password_validation(self):
         payload = {"email": "register@test.com", "password": "shrt"}
-        url = reverse("user:create")
+        url = reverse("users:create")
         res = self.client.post(path=url, data=payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
@@ -88,7 +88,7 @@ class UserAPITest(TestCase):
 
     def test_register_user(self):
         payload = {"email": "register@test.com", "password": "test_password"}
-        url = reverse("user:create")
+        url = reverse("users:create")
         res = self.client.post(path=url, data=payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
@@ -99,7 +99,7 @@ class UserAPITest(TestCase):
     def test_user_manage_access(self):
         self.client.force_authenticate(self.user)
 
-        res = self.client.get(path=reverse("user:manage"))
+        res = self.client.get(path=reverse("users:manage"))
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(self.user.email, res.data.get("email"))
