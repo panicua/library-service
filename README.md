@@ -9,6 +9,7 @@ This is the Library Management API. This project provides a comprehensive set of
 - Throttling with anon, authenticated users.
 - Telegram bot with simple functionality (buttons).
 - Telegram bot with notifications (borrowing/payment/overdue).
+- Stripe payment system for book borrowings.
 - API Pagination.
 - Library API has such apps api/: books, borrowings, payments, users.
 - For their detailed endpoints you can check our swagger documentation /api/schema/swagger/.
